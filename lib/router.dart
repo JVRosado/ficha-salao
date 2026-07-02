@@ -1,4 +1,6 @@
 import 'package:go_router/go_router.dart';
+import 'screens/login_screen.dart';
+import 'utils/api_client.dart';
 import 'screens/home_screen.dart';
 import 'screens/search_client_screen.dart';
 import 'screens/form_step1_screen.dart';
@@ -13,7 +15,15 @@ import 'screens/add_appointment_screen.dart';
 
 final router = GoRouter(
   initialLocation: '/',
+  redirect: (context, state) async {
+    final loggedIn = await ApiClient.isLoggedIn();
+    final loggingIn = state.matchedLocation == '/login';
+    if (!loggedIn && !loggingIn) return '/login';
+    if (loggedIn && loggingIn) return '/';
+    return null;
+  },
   routes: [
+    GoRoute(path: '/login', builder: (c, s) => const LoginScreen()),
     GoRoute(path: '/', builder: (c, s) => const HomeScreen()),
     GoRoute(path: '/search', builder: (c, s) => const SearchClientScreen()),
     GoRoute(path: '/history', builder: (c, s) => const HistoryScreen()),

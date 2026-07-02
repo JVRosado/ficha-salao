@@ -1,47 +1,26 @@
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../models/models.dart';
+import 'api_client.dart';
 
 const _uuid = Uuid();
 
 class StorageService {
   static Future<void> saveClient(ClientModel client) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('client_${client.id}', jsonEncode(client.toJson()));
-
-    // Update client list
-    final list = await getClientSummaries();
-    final idx = list.indexWhere((c) => c.id == client.id);
-    final summary = ClientSummary(
-      id: client.id,
-      name: client.name,
-      phone: client.phone,
-      lastVisit: client.date,
-    );
-    if (idx >= 0) {
-      list[idx] = summary;
-    } else {
-      list.add(summary);
-    }
-    final summaryList = list
-        .map((c) => {'id': c.id, 'name': c.name, 'phone': c.phone, 'lastVisit': c.lastVisit})
-        .toList();
-    await prefs.setString('client_list', jsonEncode(summaryList));
+    await ApiClient.post('/clients', client.toJson());
   }
 
   static Future<ClientModel?> getClient(String id) async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString('client_$id');
-    if (data == null) return null;
-    return ClientModel.fromJson(jsonDecode(data));
+    try {
+      final json = await ApiClient.get('/clients/$id');
+      return ClientModel.fromJson(json);
+    } on ApiException catch (e) {
+      if (e.statusCode == 404) return null;
+      rethrow;
+    }
   }
 
   static Future<List<ClientSummary>> getClientSummaries() async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString('client_list');
-    if (data == null) return _mockClients();
-    final list = jsonDecode(data) as List;
+    final list = await ApiClient.get('/clients') as List;
     return list
         .map((c) => ClientSummary(
               id: c['id'],
@@ -51,14 +30,6 @@ class StorageService {
             ))
         .toList();
   }
-
-  static List<ClientSummary> _mockClients() => [
-        ClientSummary(id: '1', name: 'Maria Silva', phone: '(11) 98765-4321', lastVisit: '2026-03-25'),
-        ClientSummary(id: '2', name: 'Ana Costa', phone: '(11) 97654-3210', lastVisit: '2026-03-20'),
-        ClientSummary(id: '3', name: 'Juliana Santos', phone: '(11) 96543-2109', lastVisit: '2026-03-15'),
-        ClientSummary(id: '4', name: 'Carla Oliveira', phone: '(11) 95432-1098', lastVisit: '2026-03-10'),
-        ClientSummary(id: '5', name: 'Fernanda Lima', phone: '(11) 94321-0987', lastVisit: '2026-03-05'),
-      ];
 
   static ClientModel getMockClient(String id) => ClientModel(
         id: id,
@@ -92,30 +63,23 @@ class StorageService {
 
   // Appointments
   static Future<List<AppointmentModel>> getAppointments(String clientId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final data = prefs.getString('appointments_$clientId');
-    if (data == null) return [];
-    final list = jsonDecode(data) as List;
+    final list = await ApiClient.get('/clients/$clientId/appointments') as List;
     return list.map((a) => AppointmentModel.fromJson(a)).toList();
   }
 
   static Future<void> saveAppointment(String clientId, AppointmentModel appointment) async {
-    final prefs = await SharedPreferences.getInstance();
-    final list = await getAppointments(clientId);
-    final idx = list.indexWhere((a) => a.id == appointment.id);
-    if (idx >= 0) {
-      list[idx] = appointment;
-    } else {
-      list.add(appointment);
+    final body = appointment.toJson();
+    try {
+      // O id só existe no backend se este atendimento já foi criado antes.
+      await ApiClient.put('/clients/$clientId/appointments/${appointment.id}', body);
+    } on ApiException catch (e) {
+      if (e.statusCode != 404) rethrow;
+      await ApiClient.post('/clients/$clientId/appointments', body);
     }
-    await prefs.setString('appointments_$clientId', jsonEncode(list.map((a) => a.toJson()).toList()));
   }
 
   static Future<void> deleteAppointment(String clientId, String appointmentId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final list = await getAppointments(clientId);
-    list.removeWhere((a) => a.id == appointmentId);
-    await prefs.setString('appointments_$clientId', jsonEncode(list.map((a) => a.toJson()).toList()));
+    await ApiClient.delete('/clients/$clientId/appointments/$appointmentId');
   }
 
   static String generateId() => _uuid.v4().substring(0, 8);

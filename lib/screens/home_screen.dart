@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../theme.dart';
+import '../utils/api_client.dart';
 import '../widgets/shared_widgets.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -9,61 +10,77 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GradientScaffold(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Header
-            const Column(
+      child: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  'Fichas de Anamnese',
-                  style: TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.slate800,
-                  ),
-                  textAlign: TextAlign.center,
+                // Header
+                const Column(
+                  children: [
+                    Text(
+                      'Fichas de Anamnese',
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.slate800,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      'Sistema de gestão para salão de beleza',
+                      style: TextStyle(fontSize: 18, color: AppTheme.slate600),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
-                SizedBox(height: 12),
-                Text(
-                  'Sistema de gestão para salão de beleza',
-                  style: TextStyle(fontSize: 18, color: AppTheme.slate600),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-            const SizedBox(height: 60),
+                const SizedBox(height: 60),
 
-            // Buttons grid
-            Row(
-              children: [
-                Expanded(
-                  child: _MenuCard(
-                    icon: Icons.description_outlined,
-                    label: 'Nova Ficha',
-                    subtitle: 'Criar nova ficha de anamnese',
-                    color: AppTheme.primary,
-                    borderColor: AppTheme.primary,
-                    onTap: () => context.push('/search'),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  child: _MenuCard(
-                    icon: Icons.history,
-                    label: 'Consultar Histórico',
-                    subtitle: 'Ver fichas anteriores',
-                    color: AppTheme.purple,
-                    borderColor: AppTheme.purple,
-                    onTap: () => context.push('/history'),
-                  ),
+                // Buttons grid
+                Row(
+                  children: [
+                    Expanded(
+                      child: _MenuCard(
+                        icon: Icons.description_outlined,
+                        label: 'Nova Ficha',
+                        subtitle: 'Criar nova ficha de anamnese',
+                        color: AppTheme.primary,
+                        borderColor: AppTheme.primary,
+                        onTap: () => context.push('/search'),
+                      ),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: _MenuCard(
+                        icon: Icons.history,
+                        label: 'Consultar Histórico',
+                        subtitle: 'Ver fichas anteriores',
+                        color: AppTheme.purple,
+                        borderColor: AppTheme.purple,
+                        onTap: () => context.push('/history'),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+          Positioned(
+            top: 16,
+            right: 16,
+            child: IconButton(
+              icon: const Icon(Icons.logout, color: AppTheme.slate600),
+              tooltip: 'Sair',
+              onPressed: () async {
+                await ApiClient.logout();
+                if (context.mounted) context.go('/login');
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
