@@ -15,6 +15,14 @@ class FormStep4Screen extends StatefulWidget {
 class _FormStep4ScreenState extends State<FormStep4Screen> {
   final _obsCtrl = TextEditingController();
 
+  bool get _isEditing => widget.prevData['editingId'] != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _obsCtrl.text = widget.prevData['observations'] ?? '';
+  }
+
   @override
   void dispose() {
     _obsCtrl.dispose();
@@ -23,13 +31,16 @@ class _FormStep4ScreenState extends State<FormStep4Screen> {
 
   Future<void> _submit() async {
     final d = widget.prevData;
+    final editingId = d['editingId'] as String?;
     final client = ClientModel(
-      id: StorageService.generateId(),
+      id: editingId ?? StorageService.generateId(),
       name: d['name'] ?? '',
       phone: d['phone'] ?? '',
       email: d['email'] ?? '',
       birthDate: d['birthDate'] ?? '',
-      date: DateTime.now().toIso8601String().substring(0, 10),
+      date: editingId != null
+          ? (d['date'] ?? '')
+          : DateTime.now().toIso8601String().substring(0, 10),
       health: HealthInfo(
         allergies: d['allergies'] ?? '',
         medications: d['medications'] ?? '',
@@ -53,8 +64,22 @@ class _FormStep4ScreenState extends State<FormStep4Screen> {
       observations: _obsCtrl.text,
     );
 
-    await StorageService.saveClient(client);
-    if (mounted) context.go('/success');
+    if (editingId != null) {
+      await StorageService.updateClient(client);
+      if (mounted) {
+        // Fecha as 4 telas do assistente (steps 1-4) e volta para a tela de
+        // detalhes que já estava aberta, em vez de resetar a navegação com
+        // go() — isso preservava a pilha, mas deixava "Voltar" sem destino.
+        var remaining = 4;
+        while (remaining > 0 && context.canPop()) {
+          context.pop();
+          remaining--;
+        }
+      }
+    } else {
+      await StorageService.saveClient(client);
+      if (mounted) context.go('/success');
+    }
   }
 
   @override
@@ -65,7 +90,7 @@ class _FormStep4ScreenState extends State<FormStep4Screen> {
         child: Column(
           children: [
             PageHeader(
-              title: 'Nova Ficha',
+              title: _isEditing ? 'Editar Ficha' : 'Nova Ficha',
               subtitle: 'Etapa 4 de 4',
               onBack: () => context.pop(),
             ),
@@ -112,7 +137,7 @@ class _FormStep4ScreenState extends State<FormStep4Screen> {
                   const SizedBox(height: 32),
 
                   PrimaryButton(
-                    label: 'Finalizar e Salvar',
+                    label: _isEditing ? 'Salvar Alterações' : 'Finalizar e Salvar',
                     icon: Icons.check,
                     color: const Color(0xFF22C55E),
                     onPressed: _submit,

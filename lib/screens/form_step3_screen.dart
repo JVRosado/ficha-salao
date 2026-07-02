@@ -32,6 +32,32 @@ class _FormStep3ScreenState extends State<FormStep3Screen> {
   final _coloringDateCtrl = TextEditingController();
   final _desireCtrl = TextEditingController();
 
+  bool get _isEditing => widget.prevData['editingId'] != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final d = widget.prevData;
+    hasSmoothing = d['hasSmoothing'] ?? '';
+    hasColoring = d['hasColoring'] ?? '';
+    hasInspirationPhoto = d['hasInspirationPhoto'] ?? '';
+    willingToCut = d['willingToCut'] ?? '';
+    preTreatment = d['preTreatment'] ?? '';
+    postTreatment = d['postTreatment'] ?? '';
+    professionalAdvice = d['professionalAdvice'] ?? '';
+    _smoothingTypeCtrl.text = d['smoothingType'] ?? '';
+    _smoothingDateCtrl.text = d['smoothingDate'] ?? '';
+    _coloringTypeCtrl.text = d['coloringType'] ?? '';
+    _coloringDateCtrl.text = d['coloringDate'] ?? '';
+    _desireCtrl.text = d['todayDesire'] ?? '';
+    final rawTestDate = d['lastStrandTestDate'] as String?;
+    if (rawTestDate != null && rawTestDate.isNotEmpty) {
+      try {
+        lastStrandTestDate = DateTime.parse(rawTestDate);
+      } catch (_) {}
+    }
+  }
+
   @override
   void dispose() {
     _smoothingTypeCtrl.dispose();
@@ -92,7 +118,7 @@ class _FormStep3ScreenState extends State<FormStep3Screen> {
         child: Column(
           children: [
             PageHeader(
-              title: 'Nova Ficha',
+              title: _isEditing ? 'Editar Ficha' : 'Nova Ficha',
               subtitle: 'Etapa 3 de 4',
               onBack: () => context.pop(),
             ),

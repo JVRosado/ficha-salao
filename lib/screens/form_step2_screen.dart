@@ -15,6 +15,16 @@ class _FormStep2ScreenState extends State<FormStep2Screen> {
   final _medsCtrl = TextEditingController();
   final _skinCtrl = TextEditingController();
 
+  bool get _isEditing => widget.step1Data['editingId'] != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _allergiesCtrl.text = widget.step1Data['allergies'] ?? '';
+    _medsCtrl.text = widget.step1Data['medications'] ?? '';
+    _skinCtrl.text = widget.step1Data['skinConditions'] ?? '';
+  }
+
   @override
   void dispose() {
     _allergiesCtrl.dispose();
@@ -40,7 +50,7 @@ class _FormStep2ScreenState extends State<FormStep2Screen> {
         child: Column(
           children: [
             PageHeader(
-              title: 'Nova Ficha',
+              title: _isEditing ? 'Editar Ficha' : 'Nova Ficha',
               subtitle: 'Etapa 2 de 4',
               onBack: () => context.pop(),
             ),

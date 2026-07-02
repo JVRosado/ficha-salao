@@ -4,7 +4,8 @@ import '../theme.dart';
 import '../widgets/shared_widgets.dart';
 
 class FormStep1Screen extends StatefulWidget {
-  const FormStep1Screen({super.key});
+  final Map<String, dynamic> initialData;
+  const FormStep1Screen({super.key, this.initialData = const {}});
 
   @override
   State<FormStep1Screen> createState() => _FormStep1ScreenState();
@@ -16,6 +17,17 @@ class _FormStep1ScreenState extends State<FormStep1Screen> {
   final _emailCtrl = TextEditingController();
   final _birthCtrl = TextEditingController();
 
+  bool get _isEditing => widget.initialData['editingId'] != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl.text = widget.initialData['name'] ?? '';
+    _phoneCtrl.text = widget.initialData['phone'] ?? '';
+    _emailCtrl.text = widget.initialData['email'] ?? '';
+    _birthCtrl.text = widget.initialData['birthDate'] ?? '';
+  }
+
   @override
   void dispose() {
     _nameCtrl.dispose();
@@ -26,8 +38,8 @@ class _FormStep1ScreenState extends State<FormStep1Screen> {
   }
 
   void _next() {
-    // Store in a simple in-memory map via GoRouter extra
     context.push('/new/step2', extra: {
+      ...widget.initialData,
       'name': _nameCtrl.text,
       'phone': _phoneCtrl.text,
       'email': _emailCtrl.text,
@@ -58,7 +70,7 @@ class _FormStep1ScreenState extends State<FormStep1Screen> {
         child: Column(
           children: [
             PageHeader(
-              title: 'Nova Ficha',
+              title: _isEditing ? 'Editar Ficha' : 'Nova Ficha',
               subtitle: 'Etapa 1 de 4',
               onBack: () => context.pop(),
             ),

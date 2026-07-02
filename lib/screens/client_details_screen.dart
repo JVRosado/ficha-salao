@@ -98,7 +98,31 @@ class _ClientDetailsScreenState extends State<ClientDetailsScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () => context.push('/client/${c.id}/edit'),
+                          onPressed: () => context.push('/new/step1', extra: {
+                            'editingId': c.id,
+                            'date': c.date,
+                            'name': c.name,
+                            'phone': c.phone,
+                            'email': c.email,
+                            'birthDate': c.birthDate,
+                            'allergies': c.health.allergies,
+                            'medications': c.health.medications,
+                            'skinConditions': c.health.skinConditions,
+                            'hasSmoothing': c.procedures.hasSmoothing,
+                            'smoothingType': c.procedures.smoothingType,
+                            'smoothingDate': c.procedures.smoothingDate,
+                            'hasColoring': c.procedures.hasColoring,
+                            'coloringType': c.procedures.coloringType,
+                            'coloringDate': c.procedures.coloringDate,
+                            'todayDesire': c.procedures.todayDesire,
+                            'hasInspirationPhoto': c.procedures.hasInspirationPhoto,
+                            'willingToCut': c.procedures.willingToCut,
+                            'preTreatment': c.procedures.preTreatment,
+                            'postTreatment': c.procedures.postTreatment,
+                            'professionalAdvice': c.procedures.professionalAdvice,
+                            'lastStrandTestDate': c.procedures.lastStrandTestDate,
+                            'observations': c.observations,
+                          }).then((_) => _load()),
                           icon: const Icon(Icons.edit_outlined, size: 18),
                           label: const Text('Editar Ficha'),
                           style: OutlinedButton.styleFrom(

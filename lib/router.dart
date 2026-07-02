@@ -30,7 +30,12 @@ final router = GoRouter(
     GoRoute(path: '/success', builder: (c, s) => const SuccessScreen()),
 
     // Multi-step form — pass data as `extra` map
-    GoRoute(path: '/new/step1', builder: (c, s) => const FormStep1Screen()),
+    GoRoute(
+      path: '/new/step1',
+      builder: (c, s) => FormStep1Screen(
+        initialData: (s.extra as Map<String, dynamic>?) ?? {},
+      ),
+    ),
     GoRoute(
       path: '/new/step2',
       builder: (c, s) => FormStep2Screen(

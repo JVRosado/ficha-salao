@@ -9,6 +9,10 @@ class StorageService {
     await ApiClient.post('/clients', client.toJson());
   }
 
+  static Future<void> updateClient(ClientModel client) async {
+    await ApiClient.put('/clients/${client.id}', client.toJson());
+  }
+
   static Future<ClientModel?> getClient(String id) async {
     try {
       final json = await ApiClient.get('/clients/$id');
